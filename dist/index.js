@@ -263,7 +263,7 @@ function fixPush(failures, openaiAPIKey, branchName = 'master') {
             // Replace the Kotlin function with the suggestion
             const updatedContent = fileContent.replace(regexPattern, suggestion);
             // Write the updated content back to the Kotlin file
-            fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8');
+            // fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8')
             yield commitAndPush(failure.functionSourcePath, updatedContent, branchName);
         }
     });

@@ -130,7 +130,7 @@ export async function fixPush(
     // Replace the Kotlin function with the suggestion
     const updatedContent: string = fileContent.replace(regexPattern, suggestion)
     // Write the updated content back to the Kotlin file
-    fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8')
+    // fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8')
     await commitAndPush(failure.functionSourcePath, updatedContent, branchName)
   }
 }
