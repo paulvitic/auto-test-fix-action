@@ -1,16 +1,16 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import {failedTests, FailedTestInfo} from "./failedTests"
+import {fixAndPush} from "./fixAndPush"
+
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
-
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
-
-    core.setOutput('time', new Date().toTimeString())
+    const testResultsDir: string = core.getInput('testResultsDir')
+    const gptAPIEndpoint: string = core.getInput('gptAPIEndpoint')
+    const gptAPIKey: string = core.getInput('gptAPIKey')
+    const branchName: string = core.getInput('branchName')
+    const failures: FailedTestInfo[] = await failedTests(testResultsDir)
+    await fixAndPush(failures, gptAPIEndpoint, gptAPIKey, branchName)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

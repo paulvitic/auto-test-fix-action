@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.comatch.search.domain.AggregateTests" tests="5" skipped="0" failures="0" errors="0" timestamp="2023-06-18T14:43:53" hostname="pvitic-laptop" time="0.003">
+  <properties/>
+  <testcase name="domainEvents should return a list of domain events()" classname="com.comatch.search.domain.AggregateTests" time="0.001"/>
+  <testcase name="type should return the name of the concrete class()" classname="com.comatch.search.domain.AggregateTests" time="0.0"/>
+  <testcase name="clearDomainEvents should clear the domain events list()" classname="com.comatch.search.domain.AggregateTests" time="0.0"/>
+  <testcase name="registerEvent should add a domain event to the list()" classname="com.comatch.search.domain.AggregateTests" time="0.001"/>
+  <testcase name="id should return the ID of the aggregate()" classname="com.comatch.search.domain.AggregateTests" time="0.0"/>
+  <system-out><![CDATA[2023-06-18 16:43:53.118  INFO 157256 --- [ntContainer#1-1] c.c.s.adaptor.RabbitMQEventConsumer      : Received message -> {"aggregateType":"RebuildIndexProcess","aggregateId":"74ff84f0-47c1-41a8-bc7f-7b0eca7ad331","eventType":"IndexRebuildStarted","timeStamp":"2023-06-18T16:43:52.24389789","payload":{"indexAlias":"attachments","totalDocumentCount":106,"trigger":{"source":"scheduledTask","ref":"f079936c-b2e4-4342-a11c-8e1dfb289dda"}}}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
