@@ -34,27 +34,33 @@ async function getFixSuggestion(
     regexPattern: RegExp,
     testFailureMsg: string,
     openAIAPIKey: string): Promise<string> {
+
     const prompt: string = buildPrompt(fileContent, regexPattern, testFailureMsg);
-    return new Promise(async (resolve, _reject) => {
+
+    return new Promise(async (resolve, reject) => {
         // Send the prompt to the ChatGPT API for improvement
-        const response: AxiosResponse = await axios.post(
-            openaiAPIEndpoint,
-            {
-                model: "text-davinci-003",
-                prompt,
-                max_tokens: 200,
-                temperature: 0.7
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${openAIAPIKey}`
+        try {
+            const response: AxiosResponse = await axios.post(
+                openaiAPIEndpoint,
+                {
+                    model: "text-davinci-003",
+                    prompt,
+                    max_tokens: 200,
+                    temperature: 0.7
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${openAIAPIKey}`
+                    }
                 }
-            }
-        );
-        // Extracted suggestion from ChatGPT API
-        const suggestion = response.data.choices[0].text.trim();
-        resolve(suggestion);
+            );
+            // Extracted suggestion from ChatGPT API
+            const suggestion: string = response.data.choices[0].text.trim();
+            resolve(suggestion);
+        } catch (error: any) {
+            reject(error)
+        }
     });
 }
 
@@ -63,7 +69,7 @@ async function commitAndPush(filePath: string, updatedContent: string, branchNam
     const context: Context = github.context;
 
     // Get the GitHub token from the action's inputs
-    const githubToken: string = core.getInput('github-token');
+    const githubToken: string = core.getInput('githubToken');
 
     try {
         // Create a new Octokit client using the token

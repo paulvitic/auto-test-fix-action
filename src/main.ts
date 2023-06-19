@@ -9,7 +9,7 @@ async function run(): Promise<void> {
     const branchName: string = core.getInput('branchName')
 
     const failures: FailedTestInfo[] = await failedTests(testResultsDir)
-    await fixAndPush(failures, branchName, openaiAPIKey)
+    await fixAndPush(failures, openaiAPIKey, branchName)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

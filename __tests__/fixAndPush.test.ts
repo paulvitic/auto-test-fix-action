@@ -1,22 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { fixAndPush } from '../src/fixAndPush';
 import * as dotenv from "dotenv";
-// Import the necessary dependencies for mocking
-// import { getFixSuggestion, commitAndPush } from '../src/fixAndPush';
+import { fixAndPush } from '../src/fixAndPush';
 
-// jest.mock('fs');
-// jest.mock('./yourDependencies');
+dotenv.config({ path: path.resolve(__dirname, "../.env") })
+const openaiAPIKey: string = process.env.OPENAI_API_KEY || ""
 
 describe('fixAndPush', () => {
-
     const sourceCodeDir = path.join(__dirname, 'test_source_code_files');
     const targetTestFileName = "SelfHealingTest";
-    const openaiAPIKey = process.env.OPENAI_API_KEY;
-
-    // beforeEach(() => {
-    //     jest.clearAllMocks();
-    // });
 
     it('should fix failures and push changes', async () => {
         const failures = [
@@ -31,10 +23,6 @@ describe('fixAndPush', () => {
     });
 
     beforeAll(() => {
-        const pwd = path.resolve(__dirname, "../../.env")
-        console.log( pwd )
-        //dotenv.config({ path: path.resolve(__dirname, "../../.env") })
-        dotenv.config()
         // Create test files for the test cases
         fs.copyFileSync(
             `${sourceCodeDir}/${targetTestFileName}.kt`,

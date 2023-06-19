@@ -2,18 +2,19 @@ name: 'Auto test fix'
 description: 'Provide a description here'
 author: 'Paul Vitic'
 inputs:
-  testResultsDir: # change this
+  testResultsDir:
     required: true
     description: 'the test results directory'
-  testResultsDir: # change this
+  openaiAPIKey:
     required: true
-    description: 'the test results directory'
-  testResultsDir: # change this
+    description: 'OpenAI API key'
+  githubToken:
     required: true
-    description: 'the test results directory'
-  testResultsDir: # change this
-    required: true
-    description: 'the test results directory'
+    description: 'GitHub token'
+  branchName:
+    required: false
+    description: 'the branch where the changes are pushed'
+    default: 'master'
 runs:
   using: 'node16'
   main: 'dist/index.js'
