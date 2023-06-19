@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
-import {failedTests, FailedTestInfo} from "./failedTests"
-import {fixAndPush} from "./fixAndPush"
+import {failedTests, FailedTestInfo} from './failedTests'
+import {fixPush} from './fixPush'
 
 async function run(): Promise<void> {
   try {
@@ -9,7 +9,7 @@ async function run(): Promise<void> {
     const branchName: string = core.getInput('branchName')
 
     const failures: FailedTestInfo[] = await failedTests(testResultsDir)
-    await fixAndPush(failures, openaiAPIKey, branchName)
+    await fixPush(failures, openaiAPIKey, branchName)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
