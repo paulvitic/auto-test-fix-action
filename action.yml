@@ -2,10 +2,18 @@ name: 'Auto test fix'
 description: 'Provide a description here'
 author: 'Paul Vitic'
 inputs:
-  milliseconds: # change this
+  testResultsDir: # change this
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'the test results directory'
+  testResultsDir: # change this
+    required: true
+    description: 'the test results directory'
+  testResultsDir: # change this
+    required: true
+    description: 'the test results directory'
+  testResultsDir: # change this
+    required: true
+    description: 'the test results directory'
 runs:
   using: 'node16'
   main: 'dist/index.js'

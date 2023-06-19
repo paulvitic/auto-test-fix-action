@@ -5,11 +5,12 @@ import axios, {AxiosResponse} from 'axios';
 import {Octokit} from "@octokit/rest";
 import {Context} from "@actions/github/lib/context";
 import {FailedTestInfo} from "./failedTests";
+import dotenv from "dotenv";
 
-const openAIAPIEndpoint = 'https://api.openai.com/v1/completions';
-const openAIAPIKey = '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';
 const commitMessage = 'Fix function based on suggestion from ChatGPT API';
+const openaiAPIEndpoint = 'https://api.openai.com/v1/completions';
 
+dotenv.config()
 function buildPrompt(fileContent: string, regexPattern: RegExp, testFailureMsg: string): string {
     // Find the Kotlin function in the file
     const match: RegExpExecArray | null = regexPattern.exec(fileContent);
@@ -28,12 +29,16 @@ function buildPrompt(fileContent: string, regexPattern: RegExp, testFailureMsg: 
         `Suggested Kotlin function:`;
 }
 
-async function getFixSuggestion(fileContent: string, regexPattern: RegExp, testFailureMsg: string): Promise<string> {
+async function getFixSuggestion(
+    fileContent: string,
+    regexPattern: RegExp,
+    testFailureMsg: string,
+    openAIAPIKey: string): Promise<string> {
     const prompt: string = buildPrompt(fileContent, regexPattern, testFailureMsg);
     return new Promise(async (resolve, _reject) => {
         // Send the prompt to the ChatGPT API for improvement
         const response: AxiosResponse = await axios.post(
-            openAIAPIEndpoint,
+            openaiAPIEndpoint,
             {
                 model: "text-davinci-003",
                 prompt,
@@ -83,7 +88,8 @@ async function commitAndPush(filePath: string, updatedContent: string, branchNam
 
 export async function fixAndPush(
     failures: FailedTestInfo[],
-    branchName: string = 'master',
+    openaiAPIKey: string,
+    branchName: string = 'master'
 ): Promise<void> {
     for (const failure of failures) {
         const regexPattern: RegExp = new RegExp(
@@ -92,11 +98,15 @@ export async function fixAndPush(
         );
         const fileContent: string = fs.readFileSync(failure.functionSourcePath, 'utf-8');
 
-        const suggestion: string = await getFixSuggestion(fileContent, regexPattern, failure.message);
+        const suggestion: string = await getFixSuggestion(
+            fileContent,
+            regexPattern,
+            failure.message,
+            openaiAPIKey);
         // Replace the Kotlin function with the suggestion
         const updatedContent: string = fileContent.replace(regexPattern, suggestion);
         // Write the updated content back to the Kotlin file
         fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8');
-        //await commitAndPush(failure.functionSourcePath, updatedContent, branchName)
+        await commitAndPush(failure.functionSourcePath, updatedContent, branchName)
     }
 }
