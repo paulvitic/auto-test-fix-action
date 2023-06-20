@@ -70,41 +70,41 @@ async function getFixSuggestion(
   })
 }
 
-async function commitAndPush(
-  filePath: string,
-  updatedContent: string,
-  branchName: string
-): Promise<void> {
-  // Initialize GitHub context
-  const context: Context = github.context
-
-  // Get the GitHub token from the action's inputs
-  const githubToken: string = core.getInput('githubToken')
-
-  try {
-    // Create a new Octokit client using the token
-    const octokit = new Octokit({auth: githubToken})
-
-    // Commit and push the changes to the given branch
-    await octokit.repos.createOrUpdateFileContents({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      path: filePath,
-      content: updatedContent,
-      message: commitMessage,
-      branch: branchName,
-      sha: context.sha
-    })
-  } catch (error) {
-    if (error instanceof Error) {
-      core.setFailed(
-        `Failed to push changes to branch: ${branchName}. Error: ${error.message}`
-      )
-    } else {
-      core.setFailed(`Failed to push changes to branch: ${branchName}.`)
-    }
-  }
-}
+// async function commitAndPush(
+//   filePath: string,
+//   updatedContent: string,
+//   branchName: string
+// ): Promise<void> {
+//   // Initialize GitHub context
+//   const context: Context = github.context
+//
+//   // Get the GitHub token from the action's inputs
+//   const githubToken: string = core.getInput('githubToken')
+//
+//   try {
+//     // Create a new Octokit client using the token
+//     const octokit = new Octokit({auth: githubToken})
+//
+//     // Commit and push the changes to the given branch
+//     await octokit.repos.createOrUpdateFileContents({
+//       owner: context.repo.owner,
+//       repo: context.repo.repo,
+//       path: filePath,
+//       content: updatedContent,
+//       message: commitMessage,
+//       branch: branchName,
+//       sha: context.sha
+//     })
+//   } catch (error) {
+//     if (error instanceof Error) {
+//       core.setFailed(
+//         `Failed to push changes to branch: ${branchName}. Error: ${error.message}`
+//       )
+//     } else {
+//       core.setFailed(`Failed to push changes to branch: ${branchName}.`)
+//     }
+//   }
+// }
 
 export interface UpdatedContent {
   path: string
@@ -121,22 +121,25 @@ export async function fixPush(
       const res: UpdatedContent[] = []
       for (const failure of failures) {
         const regexPattern = new RegExp(
-            `fun\\s+${failure.targetFunction}\\s*\\([^)]*\\)\\s*:\\s*[\\w.]+\\s*{[^}]*}`,
-            's'
+          `fun\\s+${failure.targetFunction}\\s*\\([^)]*\\)\\s*:\\s*[\\w.]+\\s*{[^}]*}`,
+          's'
         )
         const fileContent: string = fs.readFileSync(
-            failure.functionSourcePath,
-            'utf-8'
+          failure.functionSourcePath,
+          'utf-8'
         )
 
         const suggestion: string = await getFixSuggestion(
-            fileContent,
-            regexPattern,
-            failure.message,
-            openaiAPIKey
+          fileContent,
+          regexPattern,
+          failure.message,
+          openaiAPIKey
         )
         // Replace the Kotlin function with the suggestion
-        const updatedContent: string = fileContent.replace(regexPattern, suggestion)
+        const updatedContent: string = fileContent.replace(
+          regexPattern,
+          suggestion
+        )
         // Write the updated content back to the Kotlin file
         // fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8')
         //See: https://blog.dennisokeeffe.com/blog/2020-06-22-using-octokit-to-create-files
@@ -145,10 +148,10 @@ export async function fixPush(
           content: updatedContent
         })
       }
-      resolve(res);
-        //await commitAndPush(failure.functionSourcePath, updatedContent, branchName)
+      resolve(res)
+      //await commitAndPush(failure.functionSourcePath, updatedContent, branchName)
     } catch (e) {
-      reject(e);
+      reject(e)
     }
   })
 }

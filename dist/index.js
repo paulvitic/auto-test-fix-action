@@ -175,10 +175,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.fixPush = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
-const core = __importStar(__nccwpck_require__(2186));
-const github = __importStar(__nccwpck_require__(5438));
 const axios_1 = __importDefault(__nccwpck_require__(6545));
-const rest_1 = __nccwpck_require__(5375);
 const dotenv_1 = __importDefault(__nccwpck_require__(2437));
 const commitMessage = 'Fix function based on suggestion from ChatGPT API';
 const openaiAPIEndpoint = 'https://api.openai.com/v1/completions';
@@ -224,48 +221,32 @@ function getFixSuggestion(fileContent, regexPattern, testFailureMsg, openAIAPIKe
         }));
     });
 }
-function commitAndPush(filePath, updatedContent, branchName) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Initialize GitHub context
-        const context = github.context;
-        // Get the GitHub token from the action's inputs
-        const githubToken = core.getInput('githubToken');
-        try {
-            // Create a new Octokit client using the token
-            const octokit = new rest_1.Octokit({ auth: githubToken });
-            // Commit and push the changes to the given branch
-            yield octokit.repos.createOrUpdateFileContents({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                path: filePath,
-                content: updatedContent,
-                message: commitMessage,
-                branch: branchName,
-                sha: context.sha
-            });
-        }
-        catch (error) {
-            if (error instanceof Error) {
-                core.setFailed(`Failed to push changes to branch: ${branchName}. Error: ${error.message}`);
-            }
-            else {
-                core.setFailed(`Failed to push changes to branch: ${branchName}.`);
-            }
-        }
-    });
-}
 function fixPush(failures, openaiAPIKey, branchName = 'master') {
     return __awaiter(this, void 0, void 0, function* () {
-        for (const failure of failures) {
-            const regexPattern = new RegExp(`fun\\s+${failure.targetFunction}\\s*\\([^)]*\\)\\s*:\\s*[\\w.]+\\s*{[^}]*}`, 's');
-            const fileContent = fs.readFileSync(failure.functionSourcePath, 'utf-8');
-            const suggestion = yield getFixSuggestion(fileContent, regexPattern, failure.message, openaiAPIKey);
-            // Replace the Kotlin function with the suggestion
-            const updatedContent = fileContent.replace(regexPattern, suggestion);
-            // Write the updated content back to the Kotlin file
-            // fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8')
-            yield commitAndPush(failure.functionSourcePath, updatedContent, branchName);
-        }
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const res = [];
+                for (const failure of failures) {
+                    const regexPattern = new RegExp(`fun\\s+${failure.targetFunction}\\s*\\([^)]*\\)\\s*:\\s*[\\w.]+\\s*{[^}]*}`, 's');
+                    const fileContent = fs.readFileSync(failure.functionSourcePath, 'utf-8');
+                    const suggestion = yield getFixSuggestion(fileContent, regexPattern, failure.message, openaiAPIKey);
+                    // Replace the Kotlin function with the suggestion
+                    const updatedContent = fileContent.replace(regexPattern, suggestion);
+                    // Write the updated content back to the Kotlin file
+                    // fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8')
+                    //See: https://blog.dennisokeeffe.com/blog/2020-06-22-using-octokit-to-create-files
+                    res.push({
+                        path: failure.functionSourcePath,
+                        content: updatedContent
+                    });
+                }
+                resolve(res);
+                //await commitAndPush(failure.functionSourcePath, updatedContent, branchName)
+            }
+            catch (e) {
+                reject(e);
+            }
+        }));
     });
 }
 exports.fixPush = fixPush;
@@ -314,6 +295,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const failedTests_1 = __nccwpck_require__(3485);
 const fixPush_1 = __nccwpck_require__(5086);
+const pushFiles_1 = __nccwpck_require__(1776);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -321,7 +303,8 @@ function run() {
             const openaiAPIKey = core.getInput('openaiAPIKey');
             const branchName = core.getInput('branchName');
             const failures = yield (0, failedTests_1.failedTests)(testResultsDir);
-            yield (0, fixPush_1.fixPush)(failures, openaiAPIKey, branchName);
+            const updateContent = yield (0, fixPush_1.fixPush)(failures, openaiAPIKey, branchName);
+            yield (0, pushFiles_1.pushFiles)(updateContent);
         }
         catch (error) {
             if (error instanceof Error)
@@ -330,6 +313,118 @@ function run() {
     });
 }
 run();
+
+
+/***/ }),
+
+/***/ 1776:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.pushFiles = void 0;
+// ee: https://codelounge.dev/getting-started-with-the-githubs-rest-api
+//See: https://blog.dennisokeeffe.com/blog/2020-06-22-using-octokit-to-create-files
+const rest_1 = __nccwpck_require__(5375);
+const github = __importStar(__nccwpck_require__(5438));
+const core = __importStar(__nccwpck_require__(2186));
+const pushFiles = (updatedContent) => __awaiter(void 0, void 0, void 0, function* () {
+    return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
+        try {
+            // Initialize GitHub context
+            const context = github.context;
+            // Get the GitHub token from the action's inputs
+            const githubToken = core.getInput('githubToken');
+            const octokit = new rest_1.Octokit({ auth: githubToken });
+            //git pull
+            const commits = yield octokit.repos.listCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+            });
+            const latestCommitSHA = commits.data[0].sha;
+            // make changes
+            const files = [
+                updatedContent.map(function (upt) {
+                    return Object.assign({ mode: '100644' }, upt);
+                })
+            ];
+            //     {
+            //     mode: '100644',
+            //     path: 'src/file1.txt',
+            //     content: 'Hello world 1', //whatever
+            // },{
+            //     mode: '100644',
+            //     path: 'src/file2.txt',
+            //     content: 'Hello world 2',
+            // }];
+            // git add .
+            const { data: { sha: treeSHA } } = yield octokit.git.createTree({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                // @ts-ignore
+                tree: files,
+                base_tree: latestCommitSHA
+            });
+            // git commit -m 'Changes via API'
+            const { data: { sha: newCommitSHA } } = yield octokit.git.createCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                author: {
+                    name: '',
+                    email: ''
+                },
+                tree: treeSHA,
+                message: 'Changes via API',
+                parents: [latestCommitSHA]
+            });
+            // git push origin HEAD
+            const result = yield octokit.git.updateRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: context.ref,
+                sha: newCommitSHA
+            });
+            resolve(result);
+        }
+        catch (e) {
+            reject(e);
+        }
+    }));
+});
+exports.pushFiles = pushFiles;
 
 
 /***/ }),

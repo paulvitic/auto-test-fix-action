@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import {failedTests, FailedTestInfo} from './failedTests'
 import {fixPush} from './fixPush'
-import {pushFiles} from "./pushFiles";
+import {pushFiles} from './pushFiles'
 
 async function run(): Promise<void> {
   try {
@@ -11,7 +11,7 @@ async function run(): Promise<void> {
 
     const failures: FailedTestInfo[] = await failedTests(testResultsDir)
     const updateContent = await fixPush(failures, openaiAPIKey, branchName)
-    await pushFiles(updateContent);
+    await pushFiles(updateContent)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
