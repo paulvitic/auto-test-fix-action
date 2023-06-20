@@ -106,31 +106,49 @@ async function commitAndPush(
   }
 }
 
+export interface UpdatedContent {
+  path: string
+  content: string
+}
+
 export async function fixPush(
   failures: FailedTestInfo[],
   openaiAPIKey: string,
   branchName = 'master'
-): Promise<void> {
-  for (const failure of failures) {
-    const regexPattern = new RegExp(
-      `fun\\s+${failure.targetFunction}\\s*\\([^)]*\\)\\s*:\\s*[\\w.]+\\s*{[^}]*}`,
-      's'
-    )
-    const fileContent: string = fs.readFileSync(
-      failure.functionSourcePath,
-      'utf-8'
-    )
+): Promise<UpdatedContent[]> {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const res: UpdatedContent[] = []
+      for (const failure of failures) {
+        const regexPattern = new RegExp(
+            `fun\\s+${failure.targetFunction}\\s*\\([^)]*\\)\\s*:\\s*[\\w.]+\\s*{[^}]*}`,
+            's'
+        )
+        const fileContent: string = fs.readFileSync(
+            failure.functionSourcePath,
+            'utf-8'
+        )
 
-    const suggestion: string = await getFixSuggestion(
-      fileContent,
-      regexPattern,
-      failure.message,
-      openaiAPIKey
-    )
-    // Replace the Kotlin function with the suggestion
-    const updatedContent: string = fileContent.replace(regexPattern, suggestion)
-    // Write the updated content back to the Kotlin file
-    // fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8')
-    await commitAndPush(failure.functionSourcePath, updatedContent, branchName)
-  }
+        const suggestion: string = await getFixSuggestion(
+            fileContent,
+            regexPattern,
+            failure.message,
+            openaiAPIKey
+        )
+        // Replace the Kotlin function with the suggestion
+        const updatedContent: string = fileContent.replace(regexPattern, suggestion)
+        // Write the updated content back to the Kotlin file
+        // fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8')
+        //See: https://blog.dennisokeeffe.com/blog/2020-06-22-using-octokit-to-create-files
+        res.push({
+          path: failure.functionSourcePath,
+          content: updatedContent
+        })
+      }
+      resolve(res);
+        //await commitAndPush(failure.functionSourcePath, updatedContent, branchName)
+    } catch (e) {
+      reject(e);
+    }
+  })
 }
