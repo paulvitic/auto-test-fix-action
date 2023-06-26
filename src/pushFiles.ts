@@ -18,8 +18,7 @@ type Tree = UpdatedContent & {
 
 export const pushFiles = async (
   updatedContent: UpdatedContent[],
-  context: Context,
-  githubToken: string
+  context: Context
 ): Promise<unknown> => {
   const {
     repo: {owner, repo},

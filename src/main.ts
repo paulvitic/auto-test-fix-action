@@ -7,16 +7,16 @@ import {pushFiles} from './pushFiles'
 async function run(): Promise<void> {
   try {
     const testResultsDir: string = core.getInput('testResultsDir')
-    const openaiAPIKey: string = core.getInput('openaiAPIKey')
-    const githubToken: string = core.getInput('githubToken')
+    const suggestionKey: string = core.getInput('suggestionKey')
+    const commitToken: string = core.getInput('commitToken')
+    process.env.GITHUB_TOKEN = commitToken
 
     const failures: FailedTestInfo[] = await failedTests(testResultsDir)
     const updatedContent: UpdatedContent[] = await fixSuggestion(
-      failures,
-      openaiAPIKey
+      failures, suggestionKey
     )
 
-    await pushFiles(updatedContent, github.context, githubToken)
+    await pushFiles(updatedContent, github.context)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

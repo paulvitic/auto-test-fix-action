@@ -5,10 +5,10 @@ inputs:
   testResultsDir:
     required: true
     description: 'the test results directory'
-  openaiAPIKey:
+  suggestionKey:
     required: true
     description: 'OpenAI API key'
-  githubToken:
+  commitToken:
     required: true
     description: 'GitHub token'
 runs:
