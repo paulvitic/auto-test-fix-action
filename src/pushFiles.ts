@@ -29,9 +29,7 @@ export const pushFiles = async (
 
   return new Promise(async (resolve, reject) => {
     try {
-      const octokit = new Octokit({
-        auth: githubToken
-      })
+      const octokit = new Octokit()
 
       const commits = await octokit.repos.listCommits({owner, repo})
       const latestCommitSHA = commits.data[0].sha
@@ -52,6 +50,7 @@ export const pushFiles = async (
         tree: files,
         base_tree: latestCommitSHA
       })
+      console.log(`treeSHA: ${treeSHA}`)
 
       // git commit -m 'Changes via API'
       const {
@@ -59,14 +58,15 @@ export const pushFiles = async (
       } = await octokit.git.createCommit({
         owner,
         repo,
-        author: {
-          name: '',
-          email: ''
-        },
+        // author: {
+        //   name: '',
+        //   email: ''
+        // },
         tree: treeSHA,
         message: commitMessage,
         parents: [latestCommitSHA]
       })
+      console.log(`newCommitSHA: ${newCommitSHA}`)
 
       // git push origin HEAD
       const result = await octokit.git.updateRef({
@@ -79,6 +79,7 @@ export const pushFiles = async (
     } catch (e) {
       reject(e)
     }
+    console.log('pushFiles done')
   })
 }
 
