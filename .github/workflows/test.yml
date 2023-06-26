@@ -6,6 +6,11 @@ on: # rebuild any PRs and main branch changes
       - main
       - 'releases/*'
 
+# Required for GCP auth
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build: # make sure build/ci work properly
     runs-on: ubuntu-latest
@@ -19,6 +24,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - id: gcp-auth
+        name: Authenticate with GCP
+        uses: google-github-actions/auth@v1
+        with:
+          token_format: access_token
+          workload_identity_provider: projects/381573879100/locations/global/workloadIdentityPools/github-oidc-pool/providers/github-oidc-provider
+          service_account: github@foundation-349518.iam.gserviceaccount.com
+      - name: Read secrets
+        uses: paulvitic/sops-secrets-action@v1
       - uses: ./
         with:
-          milliseconds: 1000
+          testResultsDir: __tests__/test_result_files
+          openaiAPIKey: ${{ env.SUGGESTIONS_API_KEY }}
+          githubToken: ${{ env.COMMIT_TOKEN }}
