@@ -11,7 +11,7 @@ export type UpdatedContent = {
 
 export async function fixSuggestion(
   failures: FailedTestInfo[],
-  openaiAPIKey: string
+  suggestionKey: string
 ): Promise<UpdatedContent[]> {
   return new Promise(async (resolve, reject) => {
     try {
@@ -30,7 +30,7 @@ export async function fixSuggestion(
           fileContent,
           regexPattern,
           failure.message,
-          openaiAPIKey
+          suggestionKey
         )
         // Replace the Kotlin function with the suggestion
         const updatedContent: string = fileContent.replace(
@@ -79,7 +79,7 @@ async function getFixSuggestion(
   fileContent: string,
   regexPattern: RegExp,
   testFailureMsg: string,
-  openAIAPIKey: string
+  suggestionKey: string
 ): Promise<string> {
   const prompt: string = buildPrompt(fileContent, regexPattern, testFailureMsg)
 
@@ -97,7 +97,7 @@ async function getFixSuggestion(
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${openAIAPIKey}`
+            Authorization: `Bearer ${suggestionKey}`
           }
         }
       )
