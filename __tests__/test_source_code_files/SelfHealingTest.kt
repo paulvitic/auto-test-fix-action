@@ -28,6 +28,12 @@ class MyFunctionTest {
         return 42
     }
 
+//additional code
+@Throws(NotImplementedError::class)
+    fun notImplemented(): Nothing {
+        throw NotImplementedError("An operation is not implemented: It will be soon")
+    }
+
 //Adding the @Throws annotation
 @Throws(NotImplementedError::class)
 fun myFunction(): Int {
