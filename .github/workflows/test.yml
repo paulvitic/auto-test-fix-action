@@ -32,7 +32,7 @@ jobs:
           workload_identity_provider: projects/381573879100/locations/global/workloadIdentityPools/github-oidc-pool/providers/github-oidc-provider
           service_account: github@foundation-349518.iam.gserviceaccount.com
       - name: Read secrets
-        uses: paulvitic/sops-secrets-action@v1
+        uses: paulvitic/sops-secrets-action@v1.0.0
       - uses: ./
         with:
           testResultsDir: __tests__/test_result_files
