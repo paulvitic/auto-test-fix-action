@@ -26,7 +26,12 @@ class MyFunctionTest {
     // The target function to be tested
     private fun myFunction(): Int {
     // Using the 'return' keyword to explicitly return the expected result
-    return 42
+    try {
+        return 42
+    } catch (e: NotImplementedError) {
+        // Handle the exception
+        return 0
+    }
 }
 
 //additional code
