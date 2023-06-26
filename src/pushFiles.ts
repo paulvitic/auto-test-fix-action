@@ -71,14 +71,14 @@ export const pushFiles = async (
       const result = await octokit.git.updateRef({
         owner,
         repo,
-        ref,
+        ref: ref.replace('refs/', ''),
         sha: newCommitSHA
       })
+      console.log('pushFiles done')
       resolve(result)
     } catch (e) {
       reject(e)
     }
-    console.log('pushFiles done')
   })
 }
 

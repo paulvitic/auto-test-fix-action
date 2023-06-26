@@ -15,14 +15,14 @@ describe('pushFiles', () => {
   const context: Context = {
     action: '',
     actor: '',
-    apiUrl: '',
+    apiUrl: 'https://api.github.com',
     eventName: '',
     graphqlUrl: '',
     job: '',
     payload: {},
     runId: 0,
     runNumber: 0,
-    serverUrl: '',
+    serverUrl: 'https://github.com',
     sha: '',
     workflow: '',
     get issue(): {owner: string; repo: string; number: number} {
@@ -34,7 +34,7 @@ describe('pushFiles', () => {
     },
     ref: 'refs/heads/master'
   }
-  const githubToken: string = process.env.GITHUB_TOKEN || ''
+  process.env.GITHUB_TOKEN = process.env.COMMIT_TOKEN || ''
 
   beforeEach(() => {
     // Reset the mock for each test
