@@ -11,10 +11,6 @@ inputs:
   githubToken:
     required: true
     description: 'GitHub token'
-  branchName:
-    required: false
-    description: 'the branch where the changes are pushed'
-    default: 'master'
 runs:
   using: 'node16'
   main: 'dist/index.js'

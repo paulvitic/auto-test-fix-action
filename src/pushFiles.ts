@@ -1,6 +1,7 @@
 // ee: https://codelounge.dev/getting-started-with-the-githubs-rest-api
 //See: https://blog.dennisokeeffe.com/blog/2020-06-22-using-octokit-to-create-files
-import {Octokit} from '@octokit/rest'
+import {Octokit} from '@octokit/action'
+
 // import {OctokitResponse} from '@octokit/types'
 // import * as github from '@actions/github'
 import {Context} from '@actions/github/lib/context'
@@ -26,10 +27,12 @@ export const pushFiles = async (
   } = context
   console.log(`context repo owner: ${owner}, repo: ${repo}, ref: ${ref}`)
 
-  const octokit = new Octokit({auth: githubToken})
-
   return new Promise(async (resolve, reject) => {
     try {
+      const octokit = new Octokit({
+        auth: githubToken
+      })
+
       const commits = await octokit.repos.listCommits({owner, repo})
       const latestCommitSHA = commits.data[0].sha
 
