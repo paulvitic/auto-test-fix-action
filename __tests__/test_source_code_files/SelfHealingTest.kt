@@ -29,6 +29,10 @@ class MyFunctionTest {
     try {
         return 42
     } catch (e: NotImplementedError) {
+        // Add a catch block to handle any unexpected exceptions
+        return 0
+    }
+} catch (e: NotImplementedError) {
         // If an unexpected exception is thrown, handle it appropriately
         return 0
     }
