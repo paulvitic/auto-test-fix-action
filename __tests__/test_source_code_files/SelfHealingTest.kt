@@ -25,8 +25,9 @@ class MyFunctionTest {
 
     // The target function to be tested
     private fun myFunction(): Int {
-        return 42
-    }
+    // Using the 'return' keyword to explicitly return the expected result
+    return 42
+}
 
 //additional code
 @Throws(NotImplementedError::class)
