@@ -298,11 +298,10 @@ function run() {
         try {
             const testResultsDir = core.getInput('testResultsDir');
             const suggestionKey = core.getInput('suggestionKey');
-            const commitToken = core.getInput('commitToken');
-            //process.env.GITHUB_TOKEN = commitToken
+            process.env.GITHUB_TOKEN = core.getInput('commitToken');
             const failures = yield (0, failedTests_1.failedTests)(testResultsDir);
             const updatedContent = yield (0, fixSuggestion_1.fixSuggestion)(failures, suggestionKey);
-            yield (0, pushFiles_1.pushFiles)(updatedContent, github.context, commitToken);
+            yield (0, pushFiles_1.pushFiles)(updatedContent, github.context);
         }
         catch (error) {
             if (error instanceof Error)
@@ -335,12 +334,12 @@ exports.pushFiles = void 0;
 //See: https://blog.dennisokeeffe.com/blog/2020-06-22-using-octokit-to-create-files
 const action_1 = __nccwpck_require__(1231);
 const commitMessage = 'Fix function based on suggestion from ChatGPT API';
-const pushFiles = (updatedContent, context, commitToken) => __awaiter(void 0, void 0, void 0, function* () {
+const pushFiles = (updatedContent, context) => __awaiter(void 0, void 0, void 0, function* () {
     const { repo: { owner, repo }, ref } = context;
     console.log(`context repo owner: ${owner}, repo: ${repo}, ref: ${ref}`);
     return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const octokit = new action_1.Octokit({ auth: commitToken });
+            const octokit = new action_1.Octokit();
             const commits = yield octokit.repos.listCommits({ owner, repo });
             const latestCommitSHA = commits.data[0].sha;
             const files = updatedContent.map(function (upt) {

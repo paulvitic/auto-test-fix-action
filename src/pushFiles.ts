@@ -18,8 +18,7 @@ type Tree = UpdatedContent & {
 
 export const pushFiles = async (
   updatedContent: UpdatedContent[],
-  context: Context,
-  commitToken: string
+  context: Context
 ): Promise<unknown> => {
   const {
     repo: {owner, repo},
@@ -29,7 +28,7 @@ export const pushFiles = async (
 
   return new Promise(async (resolve, reject) => {
     try {
-      const octokit = new Octokit({auth: commitToken})
+      const octokit = new Octokit()
 
       const commits = await octokit.repos.listCommits({owner, repo})
       const latestCommitSHA = commits.data[0].sha
