@@ -9,7 +9,7 @@ async function run(): Promise<void> {
     const testResultsDir: string = core.getInput('testResultsDir')
     const suggestionKey: string = core.getInput('suggestionKey')
     const commitToken: string = core.getInput('commitToken')
-    process.env.GITHUB_TOKEN = commitToken
+    //process.env.GITHUB_TOKEN = commitToken
 
     const failures: FailedTestInfo[] = await failedTests(testResultsDir)
     const updatedContent: UpdatedContent[] = await fixSuggestion(
