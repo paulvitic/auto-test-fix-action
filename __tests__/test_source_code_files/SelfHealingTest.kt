@@ -29,6 +29,10 @@ class MyFunctionTest {
     try {
         return 42
     } catch (e: NotImplementedError) {
+        println("Unexpected exception thrown: $e")
+        return 42
+    }
+} catch (e: NotImplementedError) {
         // Add a catch block to handle any unexpected exceptions
         return 0
     }
