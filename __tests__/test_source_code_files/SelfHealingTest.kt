@@ -27,4 +27,10 @@ class MyFunctionTest {
     private fun myFunction(): Int {
         return 42
     }
+
+//Adding the @Throws annotation
+@Throws(NotImplementedError::class)
+fun myFunction(): Int {
+        return 42
+    }
 }
