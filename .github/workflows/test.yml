@@ -36,5 +36,5 @@ jobs:
       - uses: ./
         with:
           testResultsDir: __tests__/test_result_files
-          suggestionKey: ${{ env.SUGGESTIONS_KEY }}
+          suggestionKey: ${{ env.SUGGESTION_KEY }}
           commitToken: ${{ env.COMMIT_TOKEN }}
