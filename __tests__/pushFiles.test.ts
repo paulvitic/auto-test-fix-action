@@ -58,7 +58,7 @@ describe('pushFiles', () => {
     //   data: { result: 'success' }
     // });
 
-    const result = await pushFiles(updatedContent, context)
+    const result = await pushFiles(updatedContent, context, githubToken)
 
     expect(result).toEqual({result: 'success'})
     // expect(octokitMock.repos.listCommits).toHaveBeenCalledWith({
@@ -97,7 +97,7 @@ describe('pushFiles', () => {
     // octokitMock.repos.listCommits.mockRejectedValueOnce(new Error('API Error'));
 
     await expect(
-      pushFiles(updatedContent, context)
+      pushFiles(updatedContent, context, githubToken)
     ).rejects.toThrowError('API Error')
     // expect(octokitMock.repos.listCommits).toHaveBeenCalledWith({
     //   owner: 'owner',

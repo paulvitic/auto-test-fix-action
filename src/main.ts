@@ -16,7 +16,7 @@ async function run(): Promise<void> {
       failures, suggestionKey
     )
 
-    await pushFiles(updatedContent, github.context)
+    await pushFiles(updatedContent, github.context, commitToken)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
