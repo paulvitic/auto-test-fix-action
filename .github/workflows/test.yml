@@ -37,4 +37,4 @@ jobs:
         with:
           testResultsDir: __tests__/test_result_files
           openaiAPIKey: ${{ env.SUGGESTIONS_API_KEY }}
-          githubToken: ${{ env.COMMIT_TOKEN }}
+          githubToken: ${{ env.GITHUB_TOKEN }}
