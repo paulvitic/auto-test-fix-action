@@ -3,14 +3,14 @@ import * as path from 'path'
 import {parseString} from 'xml2js'
 import {Stats} from 'fs'
 
-interface JUnitFailure {
+type JUnitFailure = {
   _: string
   $: {
     message: string
     type: string
   }
 }
-interface JUnitTestCase {
+type JUnitTestCase = {
   $: {
     name: string
     classname: string
@@ -18,7 +18,7 @@ interface JUnitTestCase {
   failure?: JUnitFailure[]
 }
 
-interface JUnitTestSuite {
+type JUnitTestSuite = {
   $: {
     name: string
     tests: string
@@ -29,7 +29,7 @@ interface JUnitTestSuite {
   testcase?: JUnitTestCase[]
 }
 
-export interface FailedTestInfo {
+export type FailedTestInfo = {
   targetFunction: string
   functionSourcePath: string
   message: string

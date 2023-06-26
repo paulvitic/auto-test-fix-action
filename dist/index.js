@@ -132,7 +132,7 @@ function failedTestInfo(text) {
 
 /***/ }),
 
-/***/ 5086:
+/***/ 3714:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -173,13 +173,37 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.fixPush = void 0;
+exports.fixSuggestion = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
 const axios_1 = __importDefault(__nccwpck_require__(6545));
-const dotenv_1 = __importDefault(__nccwpck_require__(2437));
-const commitMessage = 'Fix function based on suggestion from ChatGPT API';
 const openaiAPIEndpoint = 'https://api.openai.com/v1/completions';
-dotenv_1.default.config();
+function fixSuggestion(failures, openaiAPIKey) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const res = [];
+                for (const failure of failures) {
+                    const regexPattern = new RegExp(`fun\\s+${failure.targetFunction}\\s*\\([^)]*\\)\\s*:\\s*[\\w.]+\\s*{[^}]*}`, 's');
+                    const fileContent = fs.readFileSync(failure.functionSourcePath, 'utf-8');
+                    const suggestion = yield getFixSuggestion(fileContent, regexPattern, failure.message, openaiAPIKey);
+                    // Replace the Kotlin function with the suggestion
+                    const updatedContent = fileContent.replace(regexPattern, suggestion);
+                    // Write the updated content back to the Kotlin file
+                    // fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8')
+                    res.push({
+                        path: failure.functionSourcePath,
+                        content: updatedContent
+                    });
+                }
+                resolve(res);
+            }
+            catch (e) {
+                reject(e);
+            }
+        }));
+    });
+}
+exports.fixSuggestion = fixSuggestion;
 function buildPrompt(fileContent, regexPattern, testFailureMsg) {
     // Find the Kotlin function in the file
     const match = regexPattern.exec(fileContent);
@@ -221,35 +245,6 @@ function getFixSuggestion(fileContent, regexPattern, testFailureMsg, openAIAPIKe
         }));
     });
 }
-function fixPush(failures, openaiAPIKey, branchName = 'master') {
-    return __awaiter(this, void 0, void 0, function* () {
-        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-            try {
-                const res = [];
-                for (const failure of failures) {
-                    const regexPattern = new RegExp(`fun\\s+${failure.targetFunction}\\s*\\([^)]*\\)\\s*:\\s*[\\w.]+\\s*{[^}]*}`, 's');
-                    const fileContent = fs.readFileSync(failure.functionSourcePath, 'utf-8');
-                    const suggestion = yield getFixSuggestion(fileContent, regexPattern, failure.message, openaiAPIKey);
-                    // Replace the Kotlin function with the suggestion
-                    const updatedContent = fileContent.replace(regexPattern, suggestion);
-                    // Write the updated content back to the Kotlin file
-                    // fs.writeFileSync(failure.functionSourcePath, updatedContent, 'utf-8')
-                    //See: https://blog.dennisokeeffe.com/blog/2020-06-22-using-octokit-to-create-files
-                    res.push({
-                        path: failure.functionSourcePath,
-                        content: updatedContent
-                    });
-                }
-                resolve(res);
-                //await commitAndPush(failure.functionSourcePath, updatedContent, branchName)
-            }
-            catch (e) {
-                reject(e);
-            }
-        }));
-    });
-}
-exports.fixPush = fixPush;
 
 
 /***/ }),
@@ -293,18 +288,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const github = __importStar(__nccwpck_require__(5438));
 const failedTests_1 = __nccwpck_require__(3485);
-const fixPush_1 = __nccwpck_require__(5086);
+const fixSuggestion_1 = __nccwpck_require__(3714);
 const pushFiles_1 = __nccwpck_require__(1776);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const testResultsDir = core.getInput('testResultsDir');
             const openaiAPIKey = core.getInput('openaiAPIKey');
-            const branchName = core.getInput('branchName');
+            const githubToken = core.getInput('githubToken');
             const failures = yield (0, failedTests_1.failedTests)(testResultsDir);
-            const updateContent = yield (0, fixPush_1.fixPush)(failures, openaiAPIKey, branchName);
-            yield (0, pushFiles_1.pushFiles)(updateContent);
+            const updatedContent = yield (0, fixSuggestion_1.fixSuggestion)(failures, openaiAPIKey);
+            yield (0, pushFiles_1.pushFiles)(updatedContent, github.context, githubToken);
         }
         catch (error) {
             if (error instanceof Error)
@@ -322,29 +318,6 @@ run();
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -359,62 +332,42 @@ exports.pushFiles = void 0;
 // ee: https://codelounge.dev/getting-started-with-the-githubs-rest-api
 //See: https://blog.dennisokeeffe.com/blog/2020-06-22-using-octokit-to-create-files
 const rest_1 = __nccwpck_require__(5375);
-const github = __importStar(__nccwpck_require__(5438));
-const core = __importStar(__nccwpck_require__(2186));
-const pushFiles = (updatedContent) => __awaiter(void 0, void 0, void 0, function* () {
+const commitMessage = 'Fix function based on suggestion from ChatGPT API';
+const pushFiles = (updatedContent, context, githubToken) => __awaiter(void 0, void 0, void 0, function* () {
+    const { repo: { owner, repo }, ref } = context;
+    console.log(`context repo owner: ${owner}, repo: ${repo}, ref: ${ref}`);
+    const octokit = new rest_1.Octokit({ auth: githubToken });
     return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            // Initialize GitHub context
-            const context = github.context;
-            // Get the GitHub token from the action's inputs
-            const githubToken = core.getInput('githubToken');
-            const octokit = new rest_1.Octokit({ auth: githubToken });
-            //git pull
-            const commits = yield octokit.repos.listCommits({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-            });
+            const commits = yield octokit.repos.listCommits({ owner, repo });
             const latestCommitSHA = commits.data[0].sha;
-            // make changes
-            const files = [
-                updatedContent.map(function (upt) {
-                    return Object.assign({ mode: '100644' }, upt);
-                })
-            ];
-            //     {
-            //     mode: '100644',
-            //     path: 'src/file1.txt',
-            //     content: 'Hello world 1', //whatever
-            // },{
-            //     mode: '100644',
-            //     path: 'src/file2.txt',
-            //     content: 'Hello world 2',
-            // }];
+            const files = updatedContent.map(function (upt) {
+                return Object.assign({ mode: '100644' }, upt);
+            });
             // git add .
             const { data: { sha: treeSHA } } = yield octokit.git.createTree({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                // @ts-ignore
+                owner,
+                repo,
                 tree: files,
                 base_tree: latestCommitSHA
             });
             // git commit -m 'Changes via API'
             const { data: { sha: newCommitSHA } } = yield octokit.git.createCommit({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner,
+                repo,
                 author: {
                     name: '',
                     email: ''
                 },
                 tree: treeSHA,
-                message: 'Changes via API',
+                message: commitMessage,
                 parents: [latestCommitSHA]
             });
             // git push origin HEAD
             const result = yield octokit.git.updateRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: context.ref,
+                owner,
+                repo,
+                ref,
                 sha: newCommitSHA
             });
             resolve(result);
@@ -425,6 +378,41 @@ const pushFiles = (updatedContent) => __awaiter(void 0, void 0, void 0, function
     }));
 });
 exports.pushFiles = pushFiles;
+// async function commitAndPush(
+//   filePath: string,
+//   updatedContent: string,
+//   branchName: string
+// ): Promise<void> {
+//   // Initialize GitHub context
+//   const context: Context = github.context
+//
+//   // Get the GitHub token from the action's inputs
+//   const githubToken: string = core.getInput('githubToken')
+//
+//   try {
+//     // Create a new Octokit client using the token
+//     const octokit = new Octokit({auth: githubToken})
+//
+//     // Commit and push the changes to the given branch
+//     await octokit.repos.createOrUpdateFileContents({
+//       owner: context.repo.owner,
+//       repo: context.repo.repo,
+//       path: filePath,
+//       content: updatedContent,
+//       message: commitMessage,
+//       branch: branchName,
+//       sha: context.sha
+//     })
+//   } catch (error) {
+//     if (error instanceof Error) {
+//       core.setFailed(
+//         `Failed to push changes to branch: ${branchName}. Error: ${error.message}`
+//       )
+//     } else {
+//       core.setFailed(`Failed to push changes to branch: ${branchName}.`)
+//     }
+//   }
+// }
 
 
 /***/ }),
@@ -8313,327 +8301,6 @@ class Deprecation extends Error {
 }
 
 exports.Deprecation = Deprecation;
-
-
-/***/ }),
-
-/***/ 2437:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const fs = __nccwpck_require__(7147)
-const path = __nccwpck_require__(1017)
-const os = __nccwpck_require__(2037)
-const crypto = __nccwpck_require__(6113)
-const packageJson = __nccwpck_require__(9968)
-
-const version = packageJson.version
-
-const LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg
-
-// Parse src into an Object
-function parse (src) {
-  const obj = {}
-
-  // Convert buffer to string
-  let lines = src.toString()
-
-  // Convert line breaks to same format
-  lines = lines.replace(/\r\n?/mg, '\n')
-
-  let match
-  while ((match = LINE.exec(lines)) != null) {
-    const key = match[1]
-
-    // Default undefined or null to empty string
-    let value = (match[2] || '')
-
-    // Remove whitespace
-    value = value.trim()
-
-    // Check if double quoted
-    const maybeQuote = value[0]
-
-    // Remove surrounding quotes
-    value = value.replace(/^(['"`])([\s\S]*)\1$/mg, '$2')
-
-    // Expand newlines if double quoted
-    if (maybeQuote === '"') {
-      value = value.replace(/\\n/g, '\n')
-      value = value.replace(/\\r/g, '\r')
-    }
-
-    // Add to object
-    obj[key] = value
-  }
-
-  return obj
-}
-
-function _parseVault (options) {
-  const vaultPath = _vaultPath(options)
-
-  // Parse .env.vault
-  const result = DotenvModule.configDotenv({ path: vaultPath })
-  if (!result.parsed) {
-    throw new Error(`MISSING_DATA: Cannot parse ${vaultPath} for an unknown reason`)
-  }
-
-  // handle scenario for comma separated keys - for use with key rotation
-  // example: DOTENV_KEY="dotenv://:key_1234@dotenv.org/vault/.env.vault?environment=prod,dotenv://:key_7890@dotenv.org/vault/.env.vault?environment=prod"
-  const keys = _dotenvKey(options).split(',')
-  const length = keys.length
-
-  let decrypted
-  for (let i = 0; i < length; i++) {
-    try {
-      // Get full key
-      const key = keys[i].trim()
-
-      // Get instructions for decrypt
-      const attrs = _instructions(result, key)
-
-      // Decrypt
-      decrypted = DotenvModule.decrypt(attrs.ciphertext, attrs.key)
-
-      break
-    } catch (error) {
-      // last key
-      if (i + 1 >= length) {
-        throw error
-      }
-      // try next key
-    }
-  }
-
-  // Parse decrypted .env string
-  return DotenvModule.parse(decrypted)
-}
-
-function _log (message) {
-  console.log(`[dotenv@${version}][INFO] ${message}`)
-}
-
-function _warn (message) {
-  console.log(`[dotenv@${version}][WARN] ${message}`)
-}
-
-function _debug (message) {
-  console.log(`[dotenv@${version}][DEBUG] ${message}`)
-}
-
-function _dotenvKey (options) {
-  // prioritize developer directly setting options.DOTENV_KEY
-  if (options && options.DOTENV_KEY && options.DOTENV_KEY.length > 0) {
-    return options.DOTENV_KEY
-  }
-
-  // secondary infra already contains a DOTENV_KEY environment variable
-  if (process.env.DOTENV_KEY && process.env.DOTENV_KEY.length > 0) {
-    return process.env.DOTENV_KEY
-  }
-
-  // fallback to empty string
-  return ''
-}
-
-function _instructions (result, dotenvKey) {
-  // Parse DOTENV_KEY. Format is a URI
-  let uri
-  try {
-    uri = new URL(dotenvKey)
-  } catch (error) {
-    if (error.code === 'ERR_INVALID_URL') {
-      throw new Error('INVALID_DOTENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenv.org/vault/.env.vault?environment=development')
-    }
-
-    throw error
-  }
-
-  // Get decrypt key
-  const key = uri.password
-  if (!key) {
-    throw new Error('INVALID_DOTENV_KEY: Missing key part')
-  }
-
-  // Get environment
-  const environment = uri.searchParams.get('environment')
-  if (!environment) {
-    throw new Error('INVALID_DOTENV_KEY: Missing environment part')
-  }
-
-  // Get ciphertext payload
-  const environmentKey = `DOTENV_VAULT_${environment.toUpperCase()}`
-  const ciphertext = result.parsed[environmentKey] // DOTENV_VAULT_PRODUCTION
-  if (!ciphertext) {
-    throw new Error(`NOT_FOUND_DOTENV_ENVIRONMENT: Cannot locate environment ${environmentKey} in your .env.vault file.`)
-  }
-
-  return { ciphertext, key }
-}
-
-function _vaultPath (options) {
-  let dotenvPath = path.resolve(process.cwd(), '.env')
-
-  if (options && options.path && options.path.length > 0) {
-    dotenvPath = options.path
-  }
-
-  // Locate .env.vault
-  return dotenvPath.endsWith('.vault') ? dotenvPath : `${dotenvPath}.vault`
-}
-
-function _resolveHome (envPath) {
-  return envPath[0] === '~' ? path.join(os.homedir(), envPath.slice(1)) : envPath
-}
-
-function _configVault (options) {
-  _log('Loading env from encrypted .env.vault')
-
-  const parsed = DotenvModule._parseVault(options)
-
-  let processEnv = process.env
-  if (options && options.processEnv != null) {
-    processEnv = options.processEnv
-  }
-
-  DotenvModule.populate(processEnv, parsed, options)
-
-  return { parsed }
-}
-
-function configDotenv (options) {
-  let dotenvPath = path.resolve(process.cwd(), '.env')
-  let encoding = 'utf8'
-  const debug = Boolean(options && options.debug)
-
-  if (options) {
-    if (options.path != null) {
-      dotenvPath = _resolveHome(options.path)
-    }
-    if (options.encoding != null) {
-      encoding = options.encoding
-    }
-  }
-
-  try {
-    // Specifying an encoding returns a string instead of a buffer
-    const parsed = DotenvModule.parse(fs.readFileSync(dotenvPath, { encoding }))
-
-    let processEnv = process.env
-    if (options && options.processEnv != null) {
-      processEnv = options.processEnv
-    }
-
-    DotenvModule.populate(processEnv, parsed, options)
-
-    return { parsed }
-  } catch (e) {
-    if (debug) {
-      _debug(`Failed to load ${dotenvPath} ${e.message}`)
-    }
-
-    return { error: e }
-  }
-}
-
-// Populates process.env from .env file
-function config (options) {
-  const vaultPath = _vaultPath(options)
-
-  // fallback to original dotenv if DOTENV_KEY is not set
-  if (_dotenvKey(options).length === 0) {
-    return DotenvModule.configDotenv(options)
-  }
-
-  // dotenvKey exists but .env.vault file does not exist
-  if (!fs.existsSync(vaultPath)) {
-    _warn(`You set DOTENV_KEY but you are missing a .env.vault file at ${vaultPath}. Did you forget to build it?`)
-
-    return DotenvModule.configDotenv(options)
-  }
-
-  return DotenvModule._configVault(options)
-}
-
-function decrypt (encrypted, keyStr) {
-  const key = Buffer.from(keyStr.slice(-64), 'hex')
-  let ciphertext = Buffer.from(encrypted, 'base64')
-
-  const nonce = ciphertext.slice(0, 12)
-  const authTag = ciphertext.slice(-16)
-  ciphertext = ciphertext.slice(12, -16)
-
-  try {
-    const aesgcm = crypto.createDecipheriv('aes-256-gcm', key, nonce)
-    aesgcm.setAuthTag(authTag)
-    return `${aesgcm.update(ciphertext)}${aesgcm.final()}`
-  } catch (error) {
-    const isRange = error instanceof RangeError
-    const invalidKeyLength = error.message === 'Invalid key length'
-    const decryptionFailed = error.message === 'Unsupported state or unable to authenticate data'
-
-    if (isRange || invalidKeyLength) {
-      const msg = 'INVALID_DOTENV_KEY: It must be 64 characters long (or more)'
-      throw new Error(msg)
-    } else if (decryptionFailed) {
-      const msg = 'DECRYPTION_FAILED: Please check your DOTENV_KEY'
-      throw new Error(msg)
-    } else {
-      console.error('Error: ', error.code)
-      console.error('Error: ', error.message)
-      throw error
-    }
-  }
-}
-
-// Populate process.env with parsed values
-function populate (processEnv, parsed, options = {}) {
-  const debug = Boolean(options && options.debug)
-  const override = Boolean(options && options.override)
-
-  if (typeof parsed !== 'object') {
-    throw new Error('OBJECT_REQUIRED: Please check the processEnv argument being passed to populate')
-  }
-
-  // Set process.env
-  for (const key of Object.keys(parsed)) {
-    if (Object.prototype.hasOwnProperty.call(processEnv, key)) {
-      if (override === true) {
-        processEnv[key] = parsed[key]
-      }
-
-      if (debug) {
-        if (override === true) {
-          _debug(`"${key}" is already defined and WAS overwritten`)
-        } else {
-          _debug(`"${key}" is already defined and was NOT overwritten`)
-        }
-      }
-    } else {
-      processEnv[key] = parsed[key]
-    }
-  }
-}
-
-const DotenvModule = {
-  configDotenv,
-  _configVault,
-  _parseVault,
-  config,
-  decrypt,
-  parse,
-  populate
-}
-
-module.exports.configDotenv = DotenvModule.configDotenv
-module.exports._configVault = DotenvModule._configVault
-module.exports._parseVault = DotenvModule._parseVault
-module.exports.config = DotenvModule.config
-module.exports.decrypt = DotenvModule.decrypt
-module.exports.parse = DotenvModule.parse
-module.exports.populate = DotenvModule.populate
-
-module.exports = DotenvModule
 
 
 /***/ }),
@@ -21399,14 +21066,6 @@ module.exports = require("util");
 
 "use strict";
 module.exports = require("zlib");
-
-/***/ }),
-
-/***/ 9968:
-/***/ ((module) => {
-
-"use strict";
-module.exports = JSON.parse('{"_from":"dotenv","_id":"dotenv@16.3.1","_inBundle":false,"_integrity":"sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==","_location":"/dotenv","_phantomChildren":{},"_requested":{"type":"tag","registry":true,"raw":"dotenv","name":"dotenv","escapedName":"dotenv","rawSpec":"","saveSpec":null,"fetchSpec":"latest"},"_requiredBy":["#USER","/"],"_resolved":"https://registry.npmjs.org/dotenv/-/dotenv-16.3.1.tgz","_shasum":"369034de7d7e5b120972693352a3bf112172cc3e","_spec":"dotenv","_where":"/home/paul/typescript-workspace/auto-test-fix-action","browser":{"fs":false},"bugs":{"url":"https://github.com/motdotla/dotenv/issues"},"bundleDependencies":false,"deprecated":false,"description":"Loads environment variables from .env file","devDependencies":{"@definitelytyped/dtslint":"^0.0.133","@types/node":"^18.11.3","decache":"^4.6.1","sinon":"^14.0.1","standard":"^17.0.0","standard-markdown":"^7.1.0","standard-version":"^9.5.0","tap":"^16.3.0","tar":"^6.1.11","typescript":"^4.8.4"},"engines":{"node":">=12"},"exports":{".":{"types":"./lib/main.d.ts","require":"./lib/main.js","default":"./lib/main.js"},"./config":"./config.js","./config.js":"./config.js","./lib/env-options":"./lib/env-options.js","./lib/env-options.js":"./lib/env-options.js","./lib/cli-options":"./lib/cli-options.js","./lib/cli-options.js":"./lib/cli-options.js","./package.json":"./package.json"},"funding":"https://github.com/motdotla/dotenv?sponsor=1","homepage":"https://github.com/motdotla/dotenv#readme","keywords":["dotenv","env",".env","environment","variables","config","settings"],"license":"BSD-2-Clause","main":"lib/main.js","name":"dotenv","repository":{"type":"git","url":"git://github.com/motdotla/dotenv.git"},"scripts":{"dts-check":"tsc --project tests/types/tsconfig.json","lint":"standard","lint-readme":"standard-markdown","prerelease":"npm test","pretest":"npm run lint && npm run dts-check","release":"standard-version","test":"tap tests/*.js --100 -Rspec"},"types":"lib/main.d.ts","version":"16.3.1"}');
 
 /***/ }),
 

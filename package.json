@@ -1,6 +1,6 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
+  "name": "filter-matrix-config-action",
+  "version": "0.0.1",
   "private": true,
   "description": "TypeScript template action",
   "main": "lib/main.js",
@@ -33,6 +33,7 @@
     "xml2js": "^0.6.0"
   },
   "devDependencies": {
+    "@octokit/types": "^10.0.0",
     "@types/axios": "^0.14.0",
     "@types/jest": "^29.5.2",
     "@types/node": "^18.16.3",

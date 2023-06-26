@@ -1,12 +1,11 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as dotenv from 'dotenv'
-import {fixPush} from '../src/fixPush'
+import {fixSuggestion} from '../src/fixSuggestion'
 
 dotenv.config({path: path.resolve(__dirname, '../.env')})
-const openaiAPIKey: string = process.env.OPENAI_API_KEY || ''
-
-describe('fixPush', () => {
+describe('fixSuggestion', () => {
+  const openaiAPIKey: string = process.env.OPENAI_API_KEY || ''
   const sourceCodeDir = path.join(__dirname, 'test_source_code_files')
   const targetTestFileName = 'SelfHealingTest'
 
@@ -20,7 +19,8 @@ describe('fixPush', () => {
       }
       // Add more failure objects as needed
     ]
-    await fixPush(failures, openaiAPIKey)
+    const res = await fixSuggestion(failures, openaiAPIKey)
+    expect(res).toHaveLength(1)
   })
 
   beforeAll(() => {
