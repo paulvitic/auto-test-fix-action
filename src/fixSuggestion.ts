@@ -84,7 +84,7 @@ async function getFixSuggestion(
   const prompt: string = buildPrompt(fileContent, regexPattern, testFailureMsg)
 
   return new Promise(async (resolve, reject) => {
-    console.log(`prompt: ${prompt}`)
+    console.log(`requesting suggestions for fix`)
     // Send the prompt to the ChatGPT API for improvement
     try {
       const response: AxiosResponse = await axios.post(

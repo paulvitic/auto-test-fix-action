@@ -177,7 +177,7 @@ exports.fixSuggestion = void 0;
 const fs = __importStar(__nccwpck_require__(7147));
 const axios_1 = __importDefault(__nccwpck_require__(6545));
 const openaiAPIEndpoint = 'https://api.openai.com/v1/completions';
-function fixSuggestion(failures, openaiAPIKey) {
+function fixSuggestion(failures, suggestionKey) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             try {
@@ -185,7 +185,7 @@ function fixSuggestion(failures, openaiAPIKey) {
                 for (const failure of failures) {
                     const regexPattern = new RegExp(`fun\\s+${failure.targetFunction}\\s*\\([^)]*\\)\\s*:\\s*[\\w.]+\\s*{[^}]*}`, 's');
                     const fileContent = fs.readFileSync(failure.functionSourcePath, 'utf-8');
-                    const suggestion = yield getFixSuggestion(fileContent, regexPattern, failure.message, openaiAPIKey);
+                    const suggestion = yield getFixSuggestion(fileContent, regexPattern, failure.message, suggestionKey);
                     // Replace the Kotlin function with the suggestion
                     const updatedContent = fileContent.replace(regexPattern, suggestion);
                     // Write the updated content back to the Kotlin file
@@ -218,10 +218,11 @@ function buildPrompt(fileContent, regexPattern, testFailureMsg) {
         `Failed test case prompt: ${testFailureMsg}\n\n` +
         `Suggested Kotlin function:`);
 }
-function getFixSuggestion(fileContent, regexPattern, testFailureMsg, openAIAPIKey) {
+function getFixSuggestion(fileContent, regexPattern, testFailureMsg, suggestionKey) {
     return __awaiter(this, void 0, void 0, function* () {
         const prompt = buildPrompt(fileContent, regexPattern, testFailureMsg);
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            console.log(`requesting suggestions for fix`);
             // Send the prompt to the ChatGPT API for improvement
             try {
                 const response = yield axios_1.default.post(openaiAPIEndpoint, {
@@ -232,7 +233,7 @@ function getFixSuggestion(fileContent, regexPattern, testFailureMsg, openAIAPIKe
                 }, {
                     headers: {
                         'Content-Type': 'application/json',
-                        Authorization: `Bearer ${openAIAPIKey}`
+                        Authorization: `Bearer ${suggestionKey}`
                     }
                 });
                 // Extracted suggestion from ChatGPT API
@@ -296,11 +297,12 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const testResultsDir = core.getInput('testResultsDir');
-            const openaiAPIKey = core.getInput('openaiAPIKey');
-            const githubToken = core.getInput('githubToken');
+            const suggestionKey = core.getInput('suggestionKey');
+            const commitToken = core.getInput('commitToken');
+            //process.env.GITHUB_TOKEN = commitToken
             const failures = yield (0, failedTests_1.failedTests)(testResultsDir);
-            const updatedContent = yield (0, fixSuggestion_1.fixSuggestion)(failures, openaiAPIKey);
-            yield (0, pushFiles_1.pushFiles)(updatedContent, github.context, githubToken);
+            const updatedContent = yield (0, fixSuggestion_1.fixSuggestion)(failures, suggestionKey);
+            yield (0, pushFiles_1.pushFiles)(updatedContent, github.context, commitToken);
         }
         catch (error) {
             if (error instanceof Error)
@@ -333,14 +335,12 @@ exports.pushFiles = void 0;
 //See: https://blog.dennisokeeffe.com/blog/2020-06-22-using-octokit-to-create-files
 const action_1 = __nccwpck_require__(1231);
 const commitMessage = 'Fix function based on suggestion from ChatGPT API';
-const pushFiles = (updatedContent, context, githubToken) => __awaiter(void 0, void 0, void 0, function* () {
+const pushFiles = (updatedContent, context, commitToken) => __awaiter(void 0, void 0, void 0, function* () {
     const { repo: { owner, repo }, ref } = context;
     console.log(`context repo owner: ${owner}, repo: ${repo}, ref: ${ref}`);
     return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const octokit = new action_1.Octokit({
-                auth: githubToken
-            });
+            const octokit = new action_1.Octokit({ auth: commitToken });
             const commits = yield octokit.repos.listCommits({ owner, repo });
             const latestCommitSHA = commits.data[0].sha;
             const files = updatedContent.map(function (upt) {
@@ -353,18 +353,20 @@ const pushFiles = (updatedContent, context, githubToken) => __awaiter(void 0, vo
                 tree: files,
                 base_tree: latestCommitSHA
             });
+            console.log(`treeSHA: ${treeSHA}`);
             // git commit -m 'Changes via API'
             const { data: { sha: newCommitSHA } } = yield octokit.git.createCommit({
                 owner,
                 repo,
-                author: {
-                    name: '',
-                    email: ''
-                },
+                // author: {
+                //   name: '',
+                //   email: ''
+                // },
                 tree: treeSHA,
                 message: commitMessage,
                 parents: [latestCommitSHA]
             });
+            console.log(`newCommitSHA: ${newCommitSHA}`);
             // git push origin HEAD
             const result = yield octokit.git.updateRef({
                 owner,
@@ -377,6 +379,7 @@ const pushFiles = (updatedContent, context, githubToken) => __awaiter(void 0, vo
         catch (e) {
             reject(e);
         }
+        console.log('pushFiles done');
     }));
 });
 exports.pushFiles = pushFiles;

@@ -13,7 +13,8 @@ async function run(): Promise<void> {
 
     const failures: FailedTestInfo[] = await failedTests(testResultsDir)
     const updatedContent: UpdatedContent[] = await fixSuggestion(
-      failures, suggestionKey
+      failures,
+      suggestionKey
     )
 
     await pushFiles(updatedContent, github.context, commitToken)

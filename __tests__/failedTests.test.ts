@@ -10,8 +10,7 @@ describe('failedTests', () => {
 
     const expected = {
       targetFunction: 'myFunction',
-      functionSourcePath:
-        'src/test/kotlin/com/comatch/search/SelfHealingTest.kt',
+      functionSourcePath: '__tests__/test_source_code_files/SelfHealingTest.kt',
       message:
         'expected output was 42 ==> Unexpected exception thrown: kotlin.NotImplementedError: An operation is not implemented: It will be soon'
     }

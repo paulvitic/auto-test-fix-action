@@ -5,7 +5,7 @@ import {fixSuggestion} from '../src/fixSuggestion'
 
 dotenv.config({path: path.resolve(__dirname, '../.env')})
 describe('fixSuggestion', () => {
-  const openaiAPIKey: string = process.env.OPENAI_API_KEY || ''
+  const openaiAPIKey: string = process.env.SUGGESTION_KEY || ''
   const sourceCodeDir = path.join(__dirname, 'test_source_code_files')
   const targetTestFileName = 'SelfHealingTest'
 
