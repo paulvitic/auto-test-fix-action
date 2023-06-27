@@ -8,7 +8,7 @@ import {Context} from '@actions/github/lib/context'
 // import * as core from '@actions/core'
 import {UpdatedContent} from './fixSuggestion'
 
-const commitMessage = 'Fix function based on suggestion from ChatGPT API'
+const commitMessage = 'Fix failed tests based on suggestion from OpenAI'
 
 type Tree = UpdatedContent & {
   mode?: '100644' | '100755' | '040000' | '160000' | '120000' | undefined

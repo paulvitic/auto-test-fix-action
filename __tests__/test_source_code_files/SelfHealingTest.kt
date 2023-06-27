@@ -21,7 +21,7 @@ class MyFunctionTest {
 
     // The target function to be tested
     private fun myFunction(): Int {
-        return 42
+        TODO("It will be soon")
     }
 }
 

@@ -333,7 +333,7 @@ exports.pushFiles = void 0;
 // ee: https://codelounge.dev/getting-started-with-the-githubs-rest-api
 //See: https://blog.dennisokeeffe.com/blog/2020-06-22-using-octokit-to-create-files
 const action_1 = __nccwpck_require__(1231);
-const commitMessage = 'Fix function based on suggestion from ChatGPT API';
+const commitMessage = 'Fix failed tests based on suggestion from OpenAI';
 const pushFiles = (updatedContent, context) => __awaiter(void 0, void 0, void 0, function* () {
     const { repo: { owner, repo }, ref } = context;
     console.log(`context repo owner: ${owner}, repo: ${repo}, ref: ${ref}`);
