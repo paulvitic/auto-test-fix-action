@@ -32,6 +32,12 @@ export const pushFiles = async (
 
       const commits = await octokit.repos.listCommits({owner, repo})
       const latestCommitSHA = commits.data[0].sha
+      const latestCommitAuthor = commits.data[0].commit.author
+
+      if (latestCommitAuthor && latestCommitAuthor.name === 'openai') {
+        console.log('Latest commit is from openai')
+        return
+      }
 
       const files = updatedContent.map(function (upt: UpdatedContent): Tree {
         return {
@@ -57,10 +63,10 @@ export const pushFiles = async (
       } = await octokit.git.createCommit({
         owner,
         repo,
-        // author: {
-        //   name: '',
-        //   email: ''
-        // },
+        author: {
+          name: 'openai',
+          email: ''
+        },
         tree: treeSHA,
         message: commitMessage,
         parents: [latestCommitSHA]
@@ -81,39 +87,3 @@ export const pushFiles = async (
     }
   })
 }
-
-// async function commitAndPush(
-//   filePath: string,
-//   updatedContent: string,
-//   branchName: string
-// ): Promise<void> {
-//   // Initialize GitHub context
-//   const context: Context = github.context
-//
-//   // Get the GitHub token from the action's inputs
-//   const githubToken: string = core.getInput('githubToken')
-//
-//   try {
-//     // Create a new Octokit client using the token
-//     const octokit = new Octokit({auth: githubToken})
-//
-//     // Commit and push the changes to the given branch
-//     await octokit.repos.createOrUpdateFileContents({
-//       owner: context.repo.owner,
-//       repo: context.repo.repo,
-//       path: filePath,
-//       content: updatedContent,
-//       message: commitMessage,
-//       branch: branchName,
-//       sha: context.sha
-//     })
-//   } catch (error) {
-//     if (error instanceof Error) {
-//       core.setFailed(
-//         `Failed to push changes to branch: ${branchName}. Error: ${error.message}`
-//       )
-//     } else {
-//       core.setFailed(`Failed to push changes to branch: ${branchName}.`)
-//     }
-//   }
-// }
