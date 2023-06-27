@@ -343,8 +343,8 @@ const pushFiles = (updatedContent, context) => __awaiter(void 0, void 0, void 0,
             const commits = yield octokit.repos.listCommits({ owner, repo });
             const latestCommitSHA = commits.data[0].sha;
             const latestCommitAuthor = commits.data[0].commit.author;
-            if (latestCommitAuthor && latestCommitAuthor.name === 'openai') {
-                console.log('Latest commit is from openai');
+            if (!latestCommitAuthor || latestCommitAuthor.name === 'openai') {
+                console.log('No latest commit author or latest commit is from openai. Will not continue');
                 return;
             }
             const files = updatedContent.map(function (upt) {
@@ -364,7 +364,7 @@ const pushFiles = (updatedContent, context) => __awaiter(void 0, void 0, void 0,
                 repo,
                 author: {
                     name: 'openai',
-                    email: ''
+                    email: latestCommitAuthor.email || ''
                 },
                 tree: treeSHA,
                 message: commitMessage,

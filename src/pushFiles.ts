@@ -34,8 +34,10 @@ export const pushFiles = async (
       const latestCommitSHA = commits.data[0].sha
       const latestCommitAuthor = commits.data[0].commit.author
 
-      if (latestCommitAuthor && latestCommitAuthor.name === 'openai') {
-        console.log('Latest commit is from openai')
+      if (!latestCommitAuthor || latestCommitAuthor.name === 'openai') {
+        console.log(
+          'No latest commit author or latest commit is from openai. Will not continue'
+        )
         return
       }
 
@@ -65,7 +67,7 @@ export const pushFiles = async (
         repo,
         author: {
           name: 'openai',
-          email: ''
+          email: latestCommitAuthor.email || ''
         },
         tree: treeSHA,
         message: commitMessage,

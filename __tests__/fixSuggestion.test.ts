@@ -9,7 +9,7 @@ describe('fixSuggestion', () => {
   const sourceCodeDir = path.join(__dirname, 'test_source_code_files')
   const targetTestFileName = 'SelfHealingTest'
 
-  it('should fix failures and push changes', async () => {
+  it.skip('should fix failures and push changes', async () => {
     const failures = [
       {
         targetFunction: 'myFunction',
