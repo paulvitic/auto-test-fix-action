@@ -107,7 +107,10 @@ function extractTestFailureInfo(testSuite: JUnitTestSuite): FailedTestInfo[] {
   for (const testcase of testSuite.testcase) {
     if (testcase.failure) {
       for (const failure of testcase.failure) {
-        failedTestsInfo.push(failedTestInfo(failure.$.message))
+        const info = failedTestInfo(failure.$.message)
+        if (info) {
+          failedTestsInfo.push(info)
+        }
       }
     }
   }
@@ -115,18 +118,17 @@ function extractTestFailureInfo(testSuite: JUnitTestSuite): FailedTestInfo[] {
   return failedTestsInfo
 }
 
-function failedTestInfo(text: string): FailedTestInfo {
+function failedTestInfo(text: string): FailedTestInfo | null {
   const regex =
     /targetFunction:\s*(.*),\s*functionSourcePath:\s*(.*?)\s*==>\s*(.*)/
   const matches: RegExpMatchArray | null = text.match(regex)
 
-  if (!matches) {
-    throw new Error('Could not extract structured data from the provided text')
+  if (matches) {
+    return {
+      targetFunction: matches[1].trim(),
+      functionSourcePath: matches[2].trim(),
+      message: matches[3].trim()
+    }
   }
-
-  return {
-    targetFunction: matches[1].trim(),
-    functionSourcePath: matches[2].trim(),
-    message: matches[3].trim()
-  }
+  return null
 }

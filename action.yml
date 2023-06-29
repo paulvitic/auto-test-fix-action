@@ -4,7 +4,7 @@ author: 'Paul Vitic'
 inputs:
   testResultsDir:
     required: true
-    description: 'the test results directory'
+    description: 'Test results directory'
   suggestionKey:
     required: true
     description: 'OpenAI API key'
