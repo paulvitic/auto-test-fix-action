@@ -110,7 +110,10 @@ function extractTestFailureInfo(testSuite) {
     for (const testcase of testSuite.testcase) {
         if (testcase.failure) {
             for (const failure of testcase.failure) {
-                failedTestsInfo.push(failedTestInfo(failure.$.message));
+                const info = failedTestInfo(failure.$.message);
+                if (info) {
+                    failedTestsInfo.push(info);
+                }
             }
         }
     }
@@ -119,14 +122,14 @@ function extractTestFailureInfo(testSuite) {
 function failedTestInfo(text) {
     const regex = /targetFunction:\s*(.*),\s*functionSourcePath:\s*(.*?)\s*==>\s*(.*)/;
     const matches = text.match(regex);
-    if (!matches) {
-        throw new Error('Could not extract structured data from the provided text');
+    if (matches) {
+        return {
+            targetFunction: matches[1].trim(),
+            functionSourcePath: matches[2].trim(),
+            message: matches[3].trim()
+        };
     }
-    return {
-        targetFunction: matches[1].trim(),
-        functionSourcePath: matches[2].trim(),
-        message: matches[3].trim()
-    };
+    return null;
 }
 
 
@@ -335,8 +338,11 @@ exports.pushFiles = void 0;
 const action_1 = __nccwpck_require__(1231);
 const commitMessage = 'Fix failed tests based on suggestion from OpenAI';
 const pushFiles = (updatedContent, context) => __awaiter(void 0, void 0, void 0, function* () {
+    if (updatedContent.length === 0) {
+        console.log('No files to push');
+        return;
+    }
     const { repo: { owner, repo }, ref } = context;
-    console.log(`context repo owner: ${owner}, repo: ${repo}, ref: ${ref}`);
     return new Promise((resolve, reject) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             const octokit = new action_1.Octokit();

@@ -20,11 +20,15 @@ export const pushFiles = async (
   updatedContent: UpdatedContent[],
   context: Context
 ): Promise<unknown> => {
+  if (updatedContent.length === 0) {
+    console.log('No files to push')
+    return
+  }
+
   const {
     repo: {owner, repo},
     ref
   } = context
-  console.log(`context repo owner: ${owner}, repo: ${repo}, ref: ${ref}`)
 
   return new Promise(async (resolve, reject) => {
     try {
